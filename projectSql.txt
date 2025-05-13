@@ -1,0 +1,150 @@
+-- Database: pharmacy
+
+-- Drop existing tables if re-running
+DROP TABLE IF EXISTS notifications, sales_items, purchases_items, invoices, purchases, medicines_stock, medicines, suppliers, customers, admin_credentials;
+
+-- ---------------------
+-- Admin Table
+-- ---------------------
+CREATE TABLE `admin` (
+  `id` INT(11) AUTO_INCREMENT PRIMARY KEY,
+  `username` VARCHAR(50) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
+  `name` VARCHAR(100) NOT NULL
+);
+
+INSERT INTO `admin` (username, password, name) VALUES ('admin', 'admin123', 'Admin User');
+
+
+-- ---------------------
+-- Customers Table
+-- ---------------------
+CREATE TABLE customers (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  NAME VARCHAR(50) NOT NULL,
+  CONTACT_NUMBER VARCHAR(15) NOT NULL,
+  ADDRESS VARCHAR(100) NOT NULL
+);
+
+-- ---------------------
+-- Suppliers Table
+-- ---------------------
+CREATE TABLE suppliers (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  NAME VARCHAR(100) NOT NULL,
+  EMAIL VARCHAR(100),
+  CONTACT_NUMBER VARCHAR(15),
+  ADDRESS VARCHAR(100)
+);
+
+-- ---------------------
+-- Medicines Table
+-- ---------------------
+CREATE TABLE medicines (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  NAME VARCHAR(100) NOT NULL,
+  GENERIC_NAME VARCHAR(100),
+  MANUFACTURER_NAME VARCHAR(100),
+  SUPPLIER_ID INT,
+  FOREIGN KEY (SUPPLIER_ID) REFERENCES suppliers(ID)
+);
+
+-- ---------------------
+-- Medicines Stock Table
+-- ---------------------
+CREATE TABLE medicines_stock (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  MEDICINE_ID INT NOT NULL,
+  BATCH_ID VARCHAR(50) UNIQUE NOT NULL,
+  EXPIRY_DATE DATE NOT NULL,
+  QUANTITY INT NOT NULL,
+  MRP DOUBLE NOT NULL,
+  RATE DOUBLE NOT NULL,
+  FOREIGN KEY (MEDICINE_ID) REFERENCES medicines(ID)
+);
+
+-- ---------------------
+-- Purchases Table
+-- ---------------------
+CREATE TABLE purchases (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  SUPPLIER_ID INT NOT NULL,
+  INVOICE_NUMBER VARCHAR(50) NOT NULL,
+  PURCHASE_DATE DATE NOT NULL,
+  TOTAL_AMOUNT DOUBLE NOT NULL,
+  PAYMENT_STATUS VARCHAR(20),
+  FOREIGN KEY (SUPPLIER_ID) REFERENCES suppliers(ID)
+);
+
+-- ---------------------
+-- Purchase Items Table
+-- ---------------------
+CREATE TABLE purchases_items (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  PURCHASE_ID INT NOT NULL,
+  MEDICINE_ID INT NOT NULL,
+  QUANTITY INT NOT NULL,
+  RATE DOUBLE NOT NULL,
+  BATCH_ID VARCHAR(50),
+  EXPIRY_DATE DATE,
+  FOREIGN KEY (PURCHASE_ID) REFERENCES purchases(ID),
+  FOREIGN KEY (MEDICINE_ID) REFERENCES medicines(ID)
+);
+
+-- ---------------------
+-- Invoices Table
+-- ---------------------
+CREATE TABLE invoices (
+  INVOICE_ID INT AUTO_INCREMENT PRIMARY KEY,
+  CUSTOMER_ID INT NOT NULL,
+  INVOICE_DATE DATE NOT NULL,
+  TOTAL_AMOUNT DOUBLE NOT NULL,
+  TOTAL_DISCOUNT DOUBLE NOT NULL,
+  NET_TOTAL DOUBLE NOT NULL,
+  FOREIGN KEY (CUSTOMER_ID) REFERENCES customers(ID)
+);
+
+-- ---------------------
+-- Sales Items Table
+-- ---------------------
+CREATE TABLE sales_items (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  INVOICE_ID INT NOT NULL,
+  MEDICINE_ID INT NOT NULL,
+  QUANTITY INT NOT NULL,
+  RATE DOUBLE NOT NULL,
+  DISCOUNT DOUBLE DEFAULT 0,
+  FOREIGN KEY (INVOICE_ID) REFERENCES invoices(INVOICE_ID),
+  FOREIGN KEY (MEDICINE_ID) REFERENCES medicines(ID)
+);
+
+-- ---------------------
+-- Notifications Table
+-- (For Expiring Medicines)
+-- ---------------------
+CREATE TABLE notifications (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  MEDICINE_ID INT NOT NULL,
+  BATCH_ID VARCHAR(50),
+  EXPIRY_DATE DATE,
+  NOTIFIED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (MEDICINE_ID) REFERENCES medicines(ID)
+);
+
+CREATE TABLE `customer_credentials` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `EMAIL` varchar(100) NOT NULL UNIQUE,
+  `PASSWORD` varchar(255) NOT NULL,
+  PRIMARY KEY (`ID`)
+);
+
+-- Modify customers table to add login capability
+ALTER TABLE customers
+ADD COLUMN EMAIL VARCHAR(100) NOT NULL UNIQUE,
+ADD COLUMN PASSWORD VARCHAR(255) NOT NULL;
+
+-- (Optional) Modify admin_credentials to include EMAIL for better structure
+ALTER TABLE admin_credentials
+ADD COLUMN EMAIL VARCHAR(100) DEFAULT NULL;
+ALTER TABLE medicines_stock MODIFY EXPIRY_DATE DATE;
+
