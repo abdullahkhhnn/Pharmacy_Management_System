@@ -65,7 +65,7 @@
  • Automatic stock deduction on invoice creation
  • Alerts for medicines that are low in stock or near expiry
 
- **9 Conclusion**
+ **7 Conclusion**
 The Pharmacy Management System developed is functional and meets the basic opera
 tional requirements of a small-scale pharmacy. It reduces manual tasks, ensures secure
 data handling, and streamlines billing and stock tracking. With the proposed improve
